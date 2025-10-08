@@ -1,0 +1,11 @@
+node_modules/
+dist/
+storage/
+sitemap/
+tasksConfig/undone/
+tasksConfig/done/
+*.log
+.env
+.vscode/
+.DS_Store
+Thumbs.db

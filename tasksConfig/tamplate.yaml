@@ -1,0 +1,76 @@
+# 任务信息
+name: www.columbia.com
+createAt: 2025-10-06T13:38:11.295Z
+endAt: 2025-10-06T16:56:57.837Z
+lang: '美国'
+currency: '美元'
+sitemap:
+  siteMapPath: # 商品站点地图地址(允许本地路径和http地址,但是同时只能使用一种方式)
+    - ""
+  INCLUDE_KEYWORD: # 只爬取包含该关键词的链接页面
+    - ""
+  EXCLUDE_KEYWORD:
+    - ""
+css: # 选择器
+  base: # 基础选择器
+    name: # 产品名
+      selector: "" # 产品名选择器
+      replaces:
+        - ""
+      extSelector: "" # 产品名后缀拓展选择器
+    description:
+      selector: "" # 产品描述选择器
+    categorys:
+      selector: "" # 产品分类选择器
+      slice: "" # 产品分类切片选择,如 '2<|>-1' 表示取第3个到倒数第2个
+      replaces: # 产品分类替换规则
+        - ""
+    att1Name:
+      text: "" # 属性1名称
+    att1Values:
+      selector: "" # 属性1值选择器
+      property: "" # 属性1值选择器属性,为空表示取text
+      replaces: # 属性1值替换规则
+        - ""
+    att2Name:
+      text: "" # 属性2名称
+    att2Values:
+      selector: "" # 属性2值选择器
+      property: "" # 属性2值选择器属性,为空表示取text
+      replaces: # 属性2值替换规则
+        - ""
+    att3Name:
+      text: "" # 属性3名称
+    att3Values:
+      selector: "" # 属性3值选择器
+      property: "" # 属性3值选择器属性,为空表示取text
+      replaces: # 属性3值替换规则
+        - ""
+    colorButtons:
+      selector: "" # 颜色按钮选择器（选中所有的颜色的按钮）
+    prices:
+      selectors: # 价格选择器（找到第一个有值的数组元素后停止寻找）
+        - ""
+      dpIsDot: true # 价格小数点是否为点号,否则为逗号
+      replaces: # 价格替换规则
+        - ""
+    images:
+      selectors:
+        - "" # 图片选择器（找到第一个有值的数组元素后停止寻找）
+      param: true # 保留图片链接参数
+      replaces: # 图片链接替换规则
+        - ""
+  ext:
+    waitingTime: 0 #爬取前等待时间(秒)
+    startClick:
+      - "" # 需要跳过的首屏广告
+config:
+  headless: true # 是否显示界面(false显示,true不显示)
+  test: false # 测试模式,测试模式只爬取5个产品（true开启）
+  navigationTimeoutSecs: 180 # 页面加载超时时间（秒）
+  requestHandlerTimeoutSecs: 300 # 请求处理超时时间（秒）
+  maxRequestRetries: 0 # 爬取失败重试次数
+  minConcurrency: 2 # 最小并发数
+  maxConcurrency: 5 # 最大并发数
+  maxRequestsPerCrawl: 50000 # 最大爬取产品数量
+  proxyConfiguration: "http://localhost:7897" # 代理地址,为空表示不使用代理
