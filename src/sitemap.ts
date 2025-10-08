@@ -41,7 +41,7 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
     // 使用 PlaywrightCrawler for dynamic pages
     crawler = new PlaywrightCrawler({
       maxConcurrency: maxThreads,
-      async requestHandler({ page, enqueueLinks, request }) {
+      async requestHandler({ page, request }) {
         try {
           const count = await page.locator(onlySelector).count()
           if (count > 0) {
@@ -55,15 +55,20 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
         catch {
           // 选择器超时，跳过添加此页面到 sitemap
         }
-        await enqueueLinks({
-          selector: 'a',
-          // @ts-expect-error transformRequestOptions is valid
-          transformRequestOptions: (req: any) => ({
-            ...req,
-            url: req.url.split('?')[0],
-            uniqueKey: req.url.split('?')[0],
-          }),
-        })
+        const links = await page.locator('a').evaluateAll(els =>
+          els.map(el => (el as HTMLAnchorElement).href).filter(href => href),
+        )
+        const modifiedLinks = links
+          .map((href: string) => {
+            try {
+              return new URL(href, request.url).href.split('?')[0]
+            }
+            catch {
+              return null
+            }
+          })
+          .filter((url): url is string => url !== null)
+        await crawler.addRequests(modifiedLinks.map((url: string) => ({ url, uniqueKey: url })))
         if (sitemapUrls.size >= maximumProductQuantity) {
           crawler.stop()
         }
@@ -73,7 +78,7 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
   else {
     crawler = new CheerioCrawler({
       maxConcurrency: maxThreads,
-      async requestHandler({ $, enqueueLinks, request }) {
+      async requestHandler({ $, request }) {
         try {
           const elements = $(onlySelector)
           if (elements.length > 0) {
@@ -87,15 +92,18 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
         catch {
           // 选择器超时，跳过添加此页面到 sitemap
         }
-        await enqueueLinks({
-          selector: 'a',
-          // @ts-expect-error transformRequestOptions is valid
-          transformRequestOptions: (req: any) => ({
-            ...req,
-            url: req.url.split('?')[0],
-            uniqueKey: req.url.split('?')[0],
-          }),
+        const hrefs = $('a').map((i, el) => $(el).attr('href')).get()
+        const validHrefs = hrefs.filter((href: string | undefined): href is string => href !== undefined)
+        const modifiedUrls = validHrefs.map((href: string) => {
+          try {
+            return new URL(href, request.url).href.split('?')[0]
+          }
+          catch {
+            return null
+          }
         })
+        const links = modifiedUrls.filter((url): url is string => url !== null)
+        await crawler.addRequests(links.map((url: string) => ({ url, uniqueKey: url })))
         if (sitemapUrls.size >= maximumProductQuantity) {
           crawler.stop()
         }

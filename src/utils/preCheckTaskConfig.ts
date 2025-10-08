@@ -4,6 +4,9 @@ import { parseYamlFile } from './parserYaml.js'
 export function preCheckTaskConfig(filePath: string): TaskConfig {
   const taskConfig = parseYamlFile(filePath)
 
+  // 过滤空字符串
+  taskConfig.sitemap.siteMapPath = taskConfig.sitemap.siteMapPath.filter(p => p && p.trim() !== '')
+
   // 检查sitemap配置
   if (taskConfig.sitemap.siteMapPath.length === 0) {
     throw new Error('sitemap.siteMapPath不能为空，请检查配置文件')

@@ -11,8 +11,13 @@ export async function getUrlList(sitemapPath: string[], includeKeywords: string[
     throw new Error('类型不一致：数组中既有 http(s) 链接也有本地路径')
   }
   // 先过滤掉数组中的空字符串
+  sitemapPath = sitemapPath.filter(p => p && p.trim() !== '')
   includeKeywords = includeKeywords.filter(kw => kw && kw.trim() !== '')
   excludeKeywords = excludeKeywords.filter(kw => kw && kw.trim() !== '')
+
+  if (sitemapPath.length === 0) {
+    throw new Error('sitemapPath 不能为空，请检查配置文件')
+  }
 
   const shouldFilter = includeKeywords.length > 0 && excludeKeywords.length > 0
 
