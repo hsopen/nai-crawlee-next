@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { CheerioCrawler, Configuration, PlaywrightCrawler } from 'crawlee'
+import { CheerioCrawler, Configuration, PlaywrightCrawler, ProxyConfiguration } from 'crawlee'
 
 export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySelector: string, maximumProductQuantity: number, maxThreads: number) {
   const host = new URL(homepage).host
@@ -9,6 +9,9 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
   const sitemapDir = path.join(projectRoot, 'sitemap')
   const sitemapFile = path.join(sitemapDir, `${host}_sitemap.xml`)
   const sitemapUrls: Set<string> = new Set()
+  const proxyConfiguration = new ProxyConfiguration({
+    proxyUrls: ['http://localhost:7897'],
+  })
 
   // 尝试读取现有 sitemap
   try {
@@ -41,6 +44,7 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
     // 使用 PlaywrightCrawler for dynamic pages
     crawler = new PlaywrightCrawler({
       maxConcurrency: maxThreads,
+      proxyConfiguration,
       async requestHandler({ page, request }) {
         try {
           const count = await page.locator(onlySelector).count()
@@ -78,6 +82,7 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
   else {
     crawler = new CheerioCrawler({
       maxConcurrency: maxThreads,
+      proxyConfiguration,
       async requestHandler({ $, request }) {
         try {
           const elements = $(onlySelector)
