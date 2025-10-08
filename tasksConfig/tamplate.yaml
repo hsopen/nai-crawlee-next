@@ -1,9 +1,9 @@
 # 任务信息
-name: www.columbia.com
+name:  
 createAt: 
 endAt: 
-lang: '美国'
-currency: '美元'
+lang: "美国"
+currency: "美元"
 sitemap:
   siteMapPath: # 商品站点地图地址(允许本地路径和http地址,但是同时只能使用一种方式)
     - ""
@@ -66,11 +66,11 @@ css: # 选择器
       - "" # 需要跳过的首屏广告
 config:
   headless: true # 是否显示界面(false显示,true不显示)
-  test: false # 测试模式,测试模式只爬取5个产品（true开启）
+  test: true # 测试模式,测试模式只爬取5个产品（true开启）
   navigationTimeoutSecs: 180 # 页面加载超时时间（秒）
   requestHandlerTimeoutSecs: 300 # 请求处理超时时间（秒）
   maxRequestRetries: 0 # 爬取失败重试次数
   minConcurrency: 2 # 最小并发数
   maxConcurrency: 5 # 最大并发数
-  maxRequestsPerCrawl: 50000 # 最大爬取产品数量
+  maxRequestsPerCrawl: 500000 # 最大爬取产品数量
   proxyConfiguration: "http://localhost:7897" # 代理地址,为空表示不使用代理
