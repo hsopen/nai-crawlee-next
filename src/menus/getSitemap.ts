@@ -56,7 +56,18 @@ export async function getSitemapInputs() {
         return input > 0 || '请输入一个正整数'
       },
     },
+    {
+      type: 'number',
+      name: 'proxyPort',
+      message: '代理服务器端口（数值类型）:',
+      validate: (input) => {
+        if (typeof input !== 'number')
+          return '请输入一个正整数'
+        return input > 0 || '请输入一个正整数'
+      },
+      default: 8800,
+    },
   ])
 
-  await crawlSitemap(answers.homepage, answers.isDynamic, answers.onlySelector, answers.maximumProductQuantity, answers.maxThreads)
+  await crawlSitemap(answers.homepage, answers.isDynamic, answers.onlySelector, answers.maximumProductQuantity, answers.maxThreads, answers.proxyPort)
 }

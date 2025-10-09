@@ -3,14 +3,14 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { CheerioCrawler, Configuration, PlaywrightCrawler, ProxyConfiguration } from 'crawlee'
 
-export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySelector: string, maximumProductQuantity: number, maxThreads: number) {
+export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySelector: string, maximumProductQuantity: number, maxThreads: number, proxyPort: number = 8800) {
   const host = new URL(homepage).host
   const projectRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
   const sitemapDir = path.join(projectRoot, 'sitemap')
   const sitemapFile = path.join(sitemapDir, `${host}_sitemap.xml`)
   const sitemapUrls: Set<string> = new Set()
   const proxyConfiguration = new ProxyConfiguration({
-    proxyUrls: ['http://localhost:8800'],
+    proxyUrls: [`http://localhost:${proxyPort}`],
   })
 
   // 尝试读取现有 sitemap
@@ -72,7 +72,25 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
             }
           })
           .filter((url): url is string => url !== null)
-        await crawler.addRequests(modifiedLinks.map((url: string) => ({ url, uniqueKey: url })))
+
+        // 严格过滤不合规元素
+        const newLinks = modifiedLinks
+          .filter((url: unknown) =>
+            typeof url === 'string'
+            && url.length > 0
+            && /^https?:\/\//.test(url)
+            && !sitemapUrls.has(url),
+          )
+          .map(url => ({ url, uniqueKey: url }))
+
+        if (newLinks.length > 0) {
+          try {
+            await crawler.addRequests(newLinks)
+          }
+          catch (err) {
+            console.error('addRequests error:', err, newLinks)
+          }
+        }
         if (sitemapUrls.size >= maximumProductQuantity) {
           crawler.stop()
         }
@@ -108,7 +126,25 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
           }
         })
         const links = modifiedUrls.filter((url): url is string => url !== null)
-        await crawler.addRequests(links.map((url: string) => ({ url, uniqueKey: url })))
+
+        // 严格过滤不合规元素
+        const newLinks = links
+          .filter((url: unknown) =>
+            typeof url === 'string'
+            && url.length > 0
+            && /^https?:\/\//.test(url)
+            && !sitemapUrls.has(url),
+          )
+          .map(url => ({ url, uniqueKey: url }))
+
+        if (newLinks.length > 0) {
+          try {
+            await crawler.addRequests(newLinks)
+          }
+          catch (err) {
+            console.error('addRequests error:', err, newLinks)
+          }
+        }
         if (sitemapUrls.size >= maximumProductQuantity) {
           crawler.stop()
         }
