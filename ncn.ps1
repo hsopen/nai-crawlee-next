@@ -21,7 +21,7 @@ if (!(Test-Path '.git')) {
     Write-Host '[提示] 正在重新编译 TypeScript...'
     pnpm tsc
     if ($LASTEXITCODE -ne 0) { Write-Host '[错误] 编译失败。'; Read-Host "Press Enter to exit"; exit }
-} elseif ($latestRemoteTag -and ([version]$latestRemoteTag -gt [version]$localVersion)) {
+} elseif ($latestRemoteTag -and ([version]($latestRemoteTag -replace '^refs/tags/v', '') -gt [version]$localVersion)) {
     Write-Host "[提示] 发现新版本 v$latestRemoteTag，正在拉取更新..."
     git pull
     if ($LASTEXITCODE -ne 0) { Write-Host '[错误] 拉取失败。'; Read-Host "Press Enter to exit"; exit }
