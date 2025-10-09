@@ -19,7 +19,7 @@ export async function getUrlList(sitemapPath: string[], includeKeywords: string[
     throw new Error('sitemapPath 不能为空，请检查配置文件')
   }
 
-  const shouldFilter = includeKeywords.length > 0 && excludeKeywords.length > 0
+  const shouldFilter = includeKeywords.length > 0 || excludeKeywords.length > 0
 
   if (allAreUrls) {
     const sitemap = await Sitemap.load(sitemapPath)
@@ -27,8 +27,8 @@ export async function getUrlList(sitemapPath: string[], includeKeywords: string[
     const urls = sitemap.urls
     if (shouldFilter) {
       const filteredUrls = urls.filter((url) => {
-        const include = includeKeywords.every(kw => url.includes(kw))
-        const exclude = excludeKeywords.every(kw => !url.includes(kw))
+        const include = includeKeywords.length === 0 || includeKeywords.every(kw => url.includes(kw))
+        const exclude = excludeKeywords.length === 0 || excludeKeywords.every(kw => !url.includes(kw))
         return include && exclude
       })
       console.log(`全部URL 数量: ${urls.length}, 过滤后数量: ${filteredUrls.length}`)
@@ -61,8 +61,8 @@ export async function getUrlList(sitemapPath: string[], includeKeywords: string[
   // 本地路径也做关键词过滤
   if (shouldFilter) {
     const filteredUrls = urls.filter((url) => {
-      const include = includeKeywords.every(kw => url.includes(kw))
-      const exclude = excludeKeywords.every(kw => !url.includes(kw))
+      const include = includeKeywords.length === 0 || includeKeywords.every(kw => url.includes(kw))
+      const exclude = excludeKeywords.length === 0 || excludeKeywords.every(kw => !url.includes(kw))
       return include && exclude
     })
     console.log(`全部URL 数量: ${urls.length}, 过滤后数量: ${filteredUrls.length}`)

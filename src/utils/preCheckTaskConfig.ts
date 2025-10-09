@@ -29,7 +29,7 @@ export function preCheckTaskConfig(filePath: string): TaskConfig {
   else if (cssBase.images.selectors.length === 0 || cssBase.images.selectors.every(s => s.trim() === '')) {
     throw new Error('css.base.images.selectors不能为空，请检查配置文件')
   }
-  else if (cssBase.categorys.slice.split('<|>').length >= 2) {
+  else if (cssBase.categorys.slice.split('<|>').length > 2) {
     throw new Error('css.base.categorys.slice 只能包含一个分隔符 <|>，请检查配置文件')
   }
 
