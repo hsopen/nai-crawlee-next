@@ -10,7 +10,7 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
   const sitemapFile = path.join(sitemapDir, `${host}_sitemap.xml`)
   const sitemapUrls: Set<string> = new Set()
   const proxyConfiguration = new ProxyConfiguration({
-    proxyUrls: ['http://localhost:7897'],
+    proxyUrls: ['http://localhost:8800'],
   })
 
   // 尝试读取现有 sitemap
