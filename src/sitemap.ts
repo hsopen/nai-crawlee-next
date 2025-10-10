@@ -4,14 +4,18 @@ import { fileURLToPath } from 'node:url'
 import { CheerioCrawler, Configuration, PlaywrightCrawler, ProxyConfiguration } from 'crawlee'
 
 export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySelector: string, maximumProductQuantity: number, maxThreads: number, proxyPort: number = 8800) {
-  const host = new URL(homepage).host
+  const homepageUrlObj = new URL(homepage)
+  const host = homepageUrlObj.host
   const projectRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
   const sitemapDir = path.join(projectRoot, 'sitemap')
   const sitemapFile = path.join(sitemapDir, `${host}_sitemap.xml`)
   const sitemapUrls: Set<string> = new Set()
-  const proxyConfiguration = new ProxyConfiguration({
-    proxyUrls: [`http://localhost:${proxyPort}`],
-  })
+  let proxyConfiguration: ProxyConfiguration | undefined
+  if (proxyPort !== 0) {
+    proxyConfiguration = new ProxyConfiguration({
+      proxyUrls: [`http://localhost:${proxyPort}`],
+    })
+  }
 
   // 尝试读取现有 sitemap
   try {
@@ -44,7 +48,7 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
     // 使用 PlaywrightCrawler for dynamic pages
     crawler = new PlaywrightCrawler({
       maxConcurrency: maxThreads,
-      proxyConfiguration,
+      ...(proxyConfiguration ? { proxyConfiguration } : {}),
       async requestHandler({ page, request }) {
         try {
           const count = await page.locator(onlySelector).count()
@@ -62,10 +66,31 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
         const links = await page.locator('a').evaluateAll(els =>
           els.map(el => (el as HTMLAnchorElement).href).filter(href => href),
         )
+        const allowedExts = ['', '.html', '.htm']
+        const excludeExts = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.ico', '.css', '.js', '.woff', '.woff2', '.ttf', '.otf', '.eot', '.mp4', '.mp3', '.zip', '.rar']
+        const getExt = (url: string) => {
+          const pathname = new URL(url).pathname
+          const lastDot = pathname.lastIndexOf('.')
+          if (lastDot === -1)
+            return ''
+          return pathname.substring(lastDot).toLowerCase()
+        }
         const modifiedLinks = links
-          .map((href: string) => {
+          .map((href: string | undefined) => {
+            if (!href)
+              return null
             try {
-              return new URL(href, request.url).href.split('?')[0]
+              const absUrl = new URL(href, request.url).href.split('?')[0]
+              if (absUrl && new URL(absUrl).host === host) {
+                const ext = getExt(absUrl)
+                if (
+                  (allowedExts.includes(ext) || ext === '')
+                  && !excludeExts.includes(ext)
+                ) {
+                  return absUrl
+                }
+              }
+              return null
             }
             catch {
               return null
@@ -100,7 +125,7 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
   else {
     crawler = new CheerioCrawler({
       maxConcurrency: maxThreads,
-      proxyConfiguration,
+      ...(proxyConfiguration ? { proxyConfiguration } : {}),
       async requestHandler({ $, request }) {
         try {
           const elements = $(onlySelector)
@@ -117,9 +142,30 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
         }
         const hrefs = $('a').map((i, el) => $(el).attr('href')).get()
         const validHrefs = hrefs.filter((href: string | undefined): href is string => href !== undefined)
-        const modifiedUrls = validHrefs.map((href: string) => {
+        const allowedExts = ['', '.html', '.htm']
+        const excludeExts = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.ico', '.css', '.js', '.woff', '.woff2', '.ttf', '.otf', '.eot', '.mp4', '.mp3', '.zip', '.rar']
+        const getExt = (url: string) => {
+          const pathname = new URL(url).pathname
+          const lastDot = pathname.lastIndexOf('.')
+          if (lastDot === -1)
+            return ''
+          return pathname.substring(lastDot).toLowerCase()
+        }
+        const modifiedUrls = validHrefs.map((href: string | undefined) => {
+          if (!href)
+            return null
           try {
-            return new URL(href, request.url).href.split('?')[0]
+            const absUrl = new URL(href, request.url).href.split('?')[0]
+            if (absUrl && new URL(absUrl).host === host) {
+              const ext = getExt(absUrl)
+              if (
+                (allowedExts.includes(ext) || ext === '')
+                && !excludeExts.includes(ext)
+              ) {
+                return absUrl
+              }
+            }
+            return null
           }
           catch {
             return null
