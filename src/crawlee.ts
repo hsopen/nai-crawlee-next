@@ -199,7 +199,7 @@ export async function createCrawlerInstance(configPath: string) {
     // 写入endAt时间（本地时间格式）
     const now = new Date().toLocaleString()
     if (/^endAt\s*:/m.test(yamlContent)) {
-      yamlContent = yamlContent.replace(/^(endAt\s*:\s*).*/m, `$1${now}`)
+      yamlContent = yamlContent.replace(/^endAt\s*:.*$/m, `endAt: ${now}`)
     }
     else {
       yamlContent = yamlContent.replace(/^(name\s*:\s*(?:\S.*)?)$/m, `$1\nendAt: ${now}`)
