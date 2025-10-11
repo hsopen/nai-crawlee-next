@@ -1,4 +1,12 @@
 
+
+# 检查 pnpm 是否安装
+if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) {
+    Write-Host '[信息] 未检测到 pnpm，正在使用 npm 全局安装 pnpm ...'
+    npm install pnpm -g
+    if ($LASTEXITCODE -ne 0) { Write-Host '[错误] pnpm 安装失败，请检查网络或 npm 配置。'; Read-Host "按回车退出"; exit }
+}
+
 Set-Location $PSScriptRoot
 
 function Show-Info($msg) { Write-Host "[信息] $msg" }
