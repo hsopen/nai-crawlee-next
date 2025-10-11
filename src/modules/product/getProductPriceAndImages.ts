@@ -102,7 +102,8 @@ export async function getProductPriceAndImages(
 
   // 处理价格中的点号和逗号
   if (dpIsDot) {
-    // 保持点号为小数点，无需处理
+    // 只保留数字和点号，去除逗号等其他字符
+    prices = prices.map(price => price.replace(/[^0-9.]/g, ''))
   }
   else {
     // 将点号替换为逗号作为小数分隔符（仅替换最后一个点号）
