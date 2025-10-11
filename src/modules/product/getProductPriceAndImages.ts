@@ -72,7 +72,11 @@ export async function getProductPriceAndImages(
     // 已经是绝对链接
     if (/^https?:\/\//.test(img))
       return img
-    // 以 / 开头的相对路径
+    // 以 / 开头且后面是域名（如 /footwearetc.com/xxx）
+    if (img.startsWith('/') && /^\/[\w.-]+\.[a-z]{2,}\//i.test(img)) {
+      return `https:${img}`
+    }
+    // 以 / 开头的其他相对路径
     if (img.startsWith('/')) {
       try {
         const urlObj = new URL(baseUrl)
