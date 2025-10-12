@@ -65,38 +65,57 @@ export async function getProductPriceAndImages(
     prices = [prices[0]!]
   }
 
-  // 补全相对链接
-  images = images.map((img) => {
-    if (!img)
-      return img
-    // 已经是绝对链接
-    if (/^https?:\/\//.test(img))
-      return img
-    // 以 / 开头且后面是域名（如 /footwearetc.com/xxx）
-    if (img.startsWith('/') && /^\/[\w.-]+\.[a-z]{2,}\//i.test(img)) {
-      return `https:${img}`
-    }
-    // 以 / 开头的其他相对路径
-    if (img.startsWith('/')) {
+  // 补全图片链接并过滤掉 base64 图片
+  images = images
+    .map((img) => {
+      // 过滤掉空值和 base64 图片（data:image/ 开头）
+      if (!img || /^data:image\//i.test(img))
+        return ''
+      // 1. 已经是绝对链接（http/https 开头）
+      if (/^https?:\/\//.test(img))
+        return img
+      // 2. 协议相对链接（//photopea.com/xxx）
+      if (/^\/\//.test(img)) {
+        return `https:${img}`
+      }
+      // 3. 以 /as/xxx 开头的相对路径，拼接 baseUrl.origin
+      if (/^\/as\//.test(img)) {
+        try {
+          const urlObj = new URL(baseUrl)
+          return urlObj.origin + img
+        }
+        catch {
+          return img
+        }
+      }
+      // 4. 以 /域名/xxx 开头（如 /footwearetc.com/xxx），补全为 https:
+      if (/^\/[\w.-]+\.[a-z]{2,}\//i.test(img)) {
+        return `https:${img}`
+      }
+      // 5. 其他 / 开头的相对路径，拼接 baseUrl.origin
+      if (img.startsWith('/')) {
+        try {
+          const urlObj = new URL(baseUrl)
+          return urlObj.origin + img
+        }
+        catch {
+          return img
+        }
+      }
+      // 6. 其他情况，按原逻辑补全（baseUrl.origin + path + img）
       try {
         const urlObj = new URL(baseUrl)
-        return urlObj.origin + img
+        let path = urlObj.pathname
+        if (!path.endsWith('/'))
+          path = path.replace(/\/[^/]*$/, '/')
+        return urlObj.origin + path + img
       }
       catch {
         return img
       }
-    }
-    try {
-      const urlObj = new URL(baseUrl)
-      let path = urlObj.pathname
-      if (!path.endsWith('/'))
-        path = path.replace(/\/[^/]*$/, '/')
-      return urlObj.origin + path + img
-    }
-    catch {
-      return img
-    }
-  })
+    })
+    // 过滤掉 map 过程中产生的空字符串
+    .filter(img => !!img)
 
   // 处理图片链接参数
   if (!imageParam) {
