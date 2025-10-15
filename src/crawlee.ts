@@ -63,106 +63,107 @@ export async function createCrawlerInstance(configPath: string) {
       const colorButtonsSelector = cssBase.colorButtons.selector || ''
       const imagesSelectors = Array.isArray(cssBase.images.selectors) ? cssBase.images.selectors.filter(Boolean) : []
       const pricesSelectors = Array.isArray(cssBase.prices.selectors) ? cssBase.prices.selectors.filter(Boolean) : []
-
+      await actionClick(page, taskConfig.css.ext.startClick || [])
+      // 获取产品名称
+      await page.waitForTimeout(waitingTime) // 等待，确保页面加载完成
       try {
-        await actionClick(page, taskConfig.css.ext.startClick || [])
-        // 获取产品名称
-        await page.waitForTimeout(waitingTime) // 等待10秒，确保页面加载完成
-        const productName = await getProductName(page, nameSelector, nameExtSelector)
-        // 获取简介
-        const productDesc = await getProductDesc(page, descSelector)
-        // 获取分类
-        const productCategory = await getProductCategory(page, categorySelector, cssBase.categorys.slice || '', cssBase.categorys.replaces || [])
-        // 获取属性一Name
-        const productAtt1Name = cssBase.att1Name.text
-        const productAtt2Name = cssBase.att2Name.text
-        const productAtt3Name = cssBase.att3Name.text
-        // 获取属性一Values
-        const productAtt1Values = await getProductAttValues(page, att1ValuesSelector, cssBase.att1Values.preClick || [], cssBase.att1Values.replaces || [], cssBase.att1Values.property || '')
-        const productAtt2Values = await getProductAttValues(page, att2ValuesSelector, cssBase.att2Values.preClick || [], cssBase.att2Values.replaces || [], cssBase.att2Values.property || '')
-        const productAtt3Values = await getProductAttValues(page, att3ValuesSelector, cssBase.att3Values.preClick || [], cssBase.att3Values.replaces || [], cssBase.att3Values.property || '')
-        const { prices, images } = await getProductPriceAndImages(
-          page,
-          colorButtonsSelector,
-          imagesSelectors,
-          pricesSelectors,
-          cssBase.images.replaces || [],
-          cssBase.prices.replaces || [],
-          productAtt2Values,
-          productAtt3Values,
-          baseUrl,
-          cssBase.images.param,
-          cssBase.prices.dpIsDot,
-        )
-        if (productName === '' || prices.length === 0 || productCategory === '' || images.length === 0) {
-          return
-        }
-        const dataset = await Dataset.open(`${taskConfig.name}`)
-        await dataset.pushData({
-          'Type': 'variable',
-          'SKU': uuidv7().replace(/-/g, '').toUpperCase(),
-          'Name': productName,
-          'Published': 1,
-          'Is featured?': '',
-          'Visibility in catalog': 'visible',
-          'Short description': '',
-          'Description': productDesc,
-          'Date sale price starts': '',
-          'Date sale price ends': '',
-          'Tax status': 'taxable',
-          'Tax class': '',
-          'In stock?': 1,
-          'Stock': '1000',
-          'Backorders allowed?': 1,
-          'Sold individually?': 0,
-          'Weight (lbs)': '',
-          'Length (in)': '',
-          'Width (in)': '',
-          'Height (in)': '',
-          'Allow customer reviews?': 1,
-          'Purchase note': '',
-          'Sale price': '',
-          'Regular price': prices[0],
-          'Categories': productCategory,
-          'Tags': '',
-          'Shipping class': '',
-          'Images': images.join(','),
-          'Download limit': '',
-          'Download expiry days': '',
-          'Parent': '',
-          'Grouped products': '',
-          'Upsells': '',
-          'Cross-sells': '',
-          'External URL': '',
-          'Button text': '',
-          'Position': '',
-          'Attribute 1 name': productAtt1Name,
-          'Attribute 1 value(s)': productAtt1Values.join(','),
-          'Attribute 1 visible': '1',
-          'Attribute 1 global': '1',
-          'Attribute 2 name': productAtt2Name,
-          'Attribute 2 value(s)': productAtt2Values.join(','),
-          'Attribute 2 visible': '1',
-          'Attribute 2 global': '1',
-          'Attribute 3 name': productAtt3Name,
-          'Attribute 3 value(s)': productAtt3Values.join(','),
-          'Attribute 3 visible': '',
-          'Attribute 3 global': '',
-          'zcp': prices.join(','),
-          'Sub_sku': '',
-          'Rec': 1,
-          'URL': request.url,
-        })
-
-        // 统计代码
-        productsCount++
-        siteCount++
-        const completion = siteNum > 0 ? (siteCount / siteNum) * 100 : 0
-        console.log(
-          `队列链接数: ${siteNum}, 已获取商品数: \x1B[32m${productsCount}\x1B[0m, 已访问链接数: \x1B[34m${siteCount}\x1B[0m, 完成度: \x1B[32m${completion.toFixed(2)}%\x1B[0m`,
-        )
+        await page.waitForSelector(`${nameSelector}`, { timeout: 30000 })
+        await page.waitForSelector(`${categorySelector}`, { timeout: 30000 })
       }
       catch { }
+      const productName = await getProductName(page, nameSelector, nameExtSelector)
+      // 获取简介
+      const productDesc = await getProductDesc(page, descSelector)
+      // 获取分类
+      const productCategory = await getProductCategory(page, categorySelector, cssBase.categorys.slice || '', cssBase.categorys.replaces || [])
+      // 获取属性一Name
+      const productAtt1Name = cssBase.att1Name.text
+      const productAtt2Name = cssBase.att2Name.text
+      const productAtt3Name = cssBase.att3Name.text
+      // 获取属性一Values
+      const productAtt1Values = await getProductAttValues(page, att1ValuesSelector, cssBase.att1Values.preClick || [], cssBase.att1Values.replaces || [], cssBase.att1Values.property || '')
+      const productAtt2Values = await getProductAttValues(page, att2ValuesSelector, cssBase.att2Values.preClick || [], cssBase.att2Values.replaces || [], cssBase.att2Values.property || '')
+      const productAtt3Values = await getProductAttValues(page, att3ValuesSelector, cssBase.att3Values.preClick || [], cssBase.att3Values.replaces || [], cssBase.att3Values.property || '')
+      const { prices, images } = await getProductPriceAndImages(
+        page,
+        colorButtonsSelector,
+        imagesSelectors,
+        pricesSelectors,
+        cssBase.images.replaces || [],
+        cssBase.prices.replaces || [],
+        productAtt2Values,
+        productAtt3Values,
+        baseUrl,
+        cssBase.images.param,
+        cssBase.prices.dpIsDot,
+      )
+      if (productName === '' || prices.length === 0 || productCategory === '' || images.length === 0) {
+        return
+      }
+      const dataset = await Dataset.open(`${taskConfig.name}`)
+      await dataset.pushData({
+        'Type': 'variable',
+        'SKU': uuidv7().replace(/-/g, '').toUpperCase(),
+        'Name': productName,
+        'Published': 1,
+        'Is featured?': '',
+        'Visibility in catalog': 'visible',
+        'Short description': '',
+        'Description': productDesc,
+        'Date sale price starts': '',
+        'Date sale price ends': '',
+        'Tax status': 'taxable',
+        'Tax class': '',
+        'In stock?': 1,
+        'Stock': '1000',
+        'Backorders allowed?': 1,
+        'Sold individually?': 0,
+        'Weight (lbs)': '',
+        'Length (in)': '',
+        'Width (in)': '',
+        'Height (in)': '',
+        'Allow customer reviews?': 1,
+        'Purchase note': '',
+        'Sale price': '',
+        'Regular price': prices[0],
+        'Categories': productCategory,
+        'Tags': '',
+        'Shipping class': '',
+        'Images': images.join(','),
+        'Download limit': '',
+        'Download expiry days': '',
+        'Parent': '',
+        'Grouped products': '',
+        'Upsells': '',
+        'Cross-sells': '',
+        'External URL': '',
+        'Button text': '',
+        'Position': '',
+        'Attribute 1 name': productAtt1Name,
+        'Attribute 1 value(s)': productAtt1Values.join(','),
+        'Attribute 1 visible': '1',
+        'Attribute 1 global': '1',
+        'Attribute 2 name': productAtt2Name,
+        'Attribute 2 value(s)': productAtt2Values.join(','),
+        'Attribute 2 visible': '1',
+        'Attribute 2 global': '1',
+        'Attribute 3 name': productAtt3Name,
+        'Attribute 3 value(s)': productAtt3Values.join(','),
+        'Attribute 3 visible': '',
+        'Attribute 3 global': '',
+        'zcp': prices.join(','),
+        'Sub_sku': '',
+        'Rec': 1,
+        'URL': request.url,
+      })
+
+      // 统计代码
+      productsCount++
+      siteCount++
+      const completion = siteNum > 0 ? (siteCount / siteNum) * 100 : 0
+      console.log(
+        `队列链接数: ${siteNum}, 已获取商品数: \x1B[32m${productsCount}\x1B[0m, 已访问链接数: \x1B[34m${siteCount}\x1B[0m, 完成度: \x1B[32m${completion.toFixed(2)}%\x1B[0m`,
+      )
     },
   }, config)
 

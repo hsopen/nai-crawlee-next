@@ -128,6 +128,8 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
       ...(proxyConfiguration ? { proxyConfiguration } : {}),
       async requestHandler({ $, request }) {
         try {
+          console.log('requestUrl', request.url)
+          console.log('$', $.html().slice(0, 10)) // 打印部分 HTML 内容以调试
           const elements = $(onlySelector)
           if (elements.length > 0) {
             const cleanUrl = request.url!.split('?')[0] as string
