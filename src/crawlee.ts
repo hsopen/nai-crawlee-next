@@ -46,6 +46,11 @@ export async function createCrawlerInstance(configPath: string) {
         headless: true,
       }),
     },
+    postNavigationHooks: [
+      async ({ handleCloudflareChallenge }) => {
+        await handleCloudflareChallenge()
+      },
+    ],
     requestQueue,
     proxyConfiguration,
     maxRequestsPerCrawl,
