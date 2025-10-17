@@ -2,7 +2,7 @@
 name:  
 createAt: 
 endAt: 
-lang: "美国"
+lang: "英语"
 currency: "美元"
 sitemap:
   siteMapPath: # 商品站点地图地址(允许本地路径和http地址,但是同时只能使用一种方式)

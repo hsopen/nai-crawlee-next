@@ -4,6 +4,7 @@ storage/
 sitemap/
 tasksConfig/undone/
 tasksConfig/done/
+tasksConfig/arch/
 *.log
 .env
 .vscode/
