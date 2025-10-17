@@ -1,7 +1,9 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { launchOptions } from 'camoufox-js'
 import { Configuration, Dataset, PlaywrightCrawler, ProxyConfiguration, RequestQueue } from 'crawlee'
+import { firefox } from 'playwright'
 import { v7 as uuidv7 } from 'uuid'
 import { actionClick } from './modules/actionClick.js'
 import { getProductAttValues } from './modules/product/getProductAttValues.js'
@@ -38,6 +40,12 @@ export async function createCrawlerInstance(configPath: string) {
   })
 
   const crawler = new PlaywrightCrawler({
+    launchContext: {
+      launcher: firefox,
+      launchOptions: await launchOptions({
+        headless: true,
+      }),
+    },
     requestQueue,
     proxyConfiguration,
     maxRequestsPerCrawl,
