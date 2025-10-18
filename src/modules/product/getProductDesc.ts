@@ -1,4 +1,5 @@
 import type { Page } from 'playwright'
+import { log } from 'crawlee'
 
 export async function getProductDesc(page: Page, selector: string) {
   try {
@@ -6,6 +7,7 @@ export async function getProductDesc(page: Page, selector: string) {
     return productDesc
   }
   catch {
+    log.error(`无法找到简介选择器: ${selector}`)
     return ''
   }
 }

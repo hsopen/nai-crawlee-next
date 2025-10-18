@@ -14,5 +14,7 @@ export async function actionClick(page: Page, preClick: string[]) {
       }
     }
   }
-  catch {}
+  catch {
+
+  }
 }

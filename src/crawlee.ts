@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { launchOptions } from 'camoufox-js'
-import { Configuration, Dataset, PlaywrightCrawler, ProxyConfiguration, RequestQueue } from 'crawlee'
+import { Configuration, Dataset, log, PlaywrightCrawler, ProxyConfiguration, RequestQueue } from 'crawlee'
 import { firefox } from 'playwright'
 import { v7 as uuidv7 } from 'uuid'
 import { actionClick } from './modules/actionClick.js'
@@ -60,7 +60,7 @@ export async function createCrawlerInstance(configPath: string) {
     maxRequestRetries: taskConfig.config.maxRequestRetries,
     headless: taskConfig.config.headless,
     requestHandlerTimeoutSecs: taskConfig.config.requestHandlerTimeoutSecs,
-    async requestHandler({ request, page }) {
+    async requestHandler({ request, page, handleCloudflareChallenge }) {
       const baseUrl = new URL(request.url).origin
       const cssBase = taskConfig.css.base
 
@@ -79,11 +79,13 @@ export async function createCrawlerInstance(configPath: string) {
       await actionClick(page, taskConfig.css.ext.startClick || [])
       // 获取产品名称
       await page.waitForTimeout(waitingTime) // 等待，确保页面加载完成
+      await handleCloudflareChallenge()
       try {
         await page.waitForSelector(`${nameSelector}`, { timeout: 30000 })
         await page.waitForSelector(`${categorySelector}`, { timeout: 30000 })
       }
-      catch { }
+      catch { log.error(`无法找到名称或分类选择器: ${request.url}`) }
+      await handleCloudflareChallenge()
       const productName = await getProductName(page, nameSelector, nameExtSelector)
       // 获取简介
       const productDesc = await getProductDesc(page, descSelector)
@@ -110,7 +112,20 @@ export async function createCrawlerInstance(configPath: string) {
         cssBase.images.param,
         cssBase.prices.dpIsDot,
       )
-      if (productName === '' || prices.length === 0 || productCategory === '' || images.length === 0) {
+      if (productName === '') {
+        log.warning(`商品名称缺失，跳过此商品: ${request.url}`)
+        return
+      }
+      if (prices.length === 0) {
+        log.warning(`商品价格缺失，跳过此商品: ${request.url}`)
+        return
+      }
+      if (productCategory === '') {
+        log.warning(`商品分类缺失，跳过此商品: ${request.url}`)
+        return
+      }
+      if (images.length === 0) {
+        log.warning(`商品图片缺失，跳过此商品: ${request.url}`)
         return
       }
       const dataset = await Dataset.open(`${taskConfig.name}`)
