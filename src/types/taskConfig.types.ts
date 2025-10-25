@@ -83,6 +83,6 @@ export interface TaskConfig {
     maxConcurrency: number
     requestHandlerTimeoutSecs: number
     maxRequestsPerCrawl: number
-    proxyConfiguration: string
+    proxyConfiguration: string[]
   }
 }

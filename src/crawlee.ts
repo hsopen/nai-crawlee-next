@@ -27,7 +27,7 @@ export async function createCrawlerInstance(configPath: string) {
     maxRequestsPerCrawl = 5
   }
   const proxyConfiguration = new ProxyConfiguration({
-    proxyUrls: [taskConfig.config.proxyConfiguration],
+    proxyUrls: taskConfig.config.proxyConfiguration,
   })
 
   const config = new Configuration({

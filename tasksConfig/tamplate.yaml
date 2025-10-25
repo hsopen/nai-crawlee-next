@@ -1,7 +1,7 @@
 # 任务信息
-name:  
-createAt: 
-endAt: 
+name:
+createAt:
+endAt:
 lang: "英语"
 currency: "美元"
 sitemap:
@@ -73,4 +73,4 @@ config:
   minConcurrency: 2 # 最小并发数
   maxConcurrency: 5 # 最大并发数
   maxRequestsPerCrawl: 500000 # 最大爬取产品数量
-  proxyConfiguration: "http://localhost:8800" # 代理地址,为空表示不使用代理
+  proxyConfiguration: ["http://localhost:8800"] # 代理地址,为空表示不使用代理
