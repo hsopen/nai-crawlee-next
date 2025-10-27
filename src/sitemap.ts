@@ -3,7 +3,14 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { CheerioCrawler, Configuration, PlaywrightCrawler, ProxyConfiguration } from 'crawlee'
 
-export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySelector: string, maximumProductQuantity: number, maxThreads: number, proxyPort: number = 8800) {
+export async function crawlSitemap(
+  homepage: string,
+  isDynamic: boolean,
+  onlySelector: string,
+  maximumProductQuantity: number,
+  maxThreads: number,
+  proxy: number | string | string[] = 8800
+) {
   const homepageUrlObj = new URL(homepage)
   const host = homepageUrlObj.host
   const projectRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -11,9 +18,17 @@ export async function crawlSitemap(homepage: string, isDynamic: boolean, onlySel
   const sitemapFile = path.join(sitemapDir, `${host}_sitemap.xml`)
   const sitemapUrls: Set<string> = new Set()
   let proxyConfiguration: ProxyConfiguration | undefined
-  if (proxyPort !== 0) {
+  let proxyUrls: string[] = []
+  if (typeof proxy === 'number' && proxy !== 0) {
+    proxyUrls = [`http://localhost:${proxy}`]
+  } else if (typeof proxy === 'string' && proxy) {
+    proxyUrls = [proxy]
+  } else if (Array.isArray(proxy) && proxy.length > 0) {
+    proxyUrls = proxy
+  }
+  if (proxyUrls.length > 0) {
     proxyConfiguration = new ProxyConfiguration({
-      proxyUrls: [`http://localhost:${proxyPort}`],
+      proxyUrls,
     })
   }
 
