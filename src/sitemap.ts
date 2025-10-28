@@ -22,7 +22,12 @@ export async function crawlSitemap(
   if (typeof proxy === 'number' && proxy !== 0) {
     proxyUrls = [`http://localhost:${proxy}`]
   } else if (typeof proxy === 'string' && proxy) {
-    proxyUrls = [proxy]
+    // 自动识别逗号分隔的字符串为数组
+    if (proxy.includes(',')) {
+      proxyUrls = proxy.split(',').map(s => s.trim().replace(/^"|"$/g, ''))
+    } else {
+      proxyUrls = [proxy.trim().replace(/^"|"$/g, '')]
+    }
   } else if (Array.isArray(proxy) && proxy.length > 0) {
     proxyUrls = proxy
   }
@@ -69,8 +74,9 @@ export async function crawlSitemap(
           const count = await page.locator(onlySelector).count()
           if (count > 0) {
             const cleanUrl = request.url!.split('?')[0] as string
-            if (!sitemapUrls.has(cleanUrl)) {
-              sitemapUrls.add(cleanUrl)
+            const encodedUrl = encodeURI(cleanUrl)
+            if (!sitemapUrls.has(encodedUrl)) {
+              sitemapUrls.add(encodedUrl)
               await writeXml()
             }
           }
@@ -121,7 +127,7 @@ export async function crawlSitemap(
             && /^https?:\/\//.test(url)
             && !sitemapUrls.has(url),
           )
-          .map(url => ({ url, uniqueKey: url }))
+          .map(url => ({ url: encodeURI(url), uniqueKey: encodeURI(url) }))
 
         if (newLinks.length > 0) {
           try {
@@ -148,8 +154,9 @@ export async function crawlSitemap(
           const elements = $(onlySelector)
           if (elements.length > 0) {
             const cleanUrl = request.url!.split('?')[0] as string
-            if (!sitemapUrls.has(cleanUrl)) {
-              sitemapUrls.add(cleanUrl)
+            const encodedUrl = encodeURI(cleanUrl)
+            if (!sitemapUrls.has(encodedUrl)) {
+              sitemapUrls.add(encodedUrl)
               await writeXml()
             }
           }
@@ -188,7 +195,7 @@ export async function crawlSitemap(
             return null
           }
         })
-        const links = modifiedUrls.filter((url): url is string => url !== null)
+  const links = modifiedUrls.filter((url): url is string => url !== null)
 
         // 严格过滤不合规元素
         const newLinks = links
@@ -196,9 +203,9 @@ export async function crawlSitemap(
             typeof url === 'string'
             && url.length > 0
             && /^https?:\/\//.test(url)
-            && !sitemapUrls.has(url),
+            && !sitemapUrls.has(encodeURI(url)),
           )
-          .map(url => ({ url, uniqueKey: url }))
+          .map(url => ({ url: encodeURI(url), uniqueKey: encodeURI(url) }))
 
         if (newLinks.length > 0) {
           try {

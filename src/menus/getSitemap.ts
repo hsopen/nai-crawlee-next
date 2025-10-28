@@ -37,9 +37,14 @@ export async function getSitemapInputs() {
       },
     },
     {
-      type: 'input',
+      type: 'number',
       name: 'maximumProductQuantity',
       message: '需要爬取的最大商品数量（数值类型）:',
+      validate: (input) => {
+        if (typeof input !== 'number')
+          return '请输入一个正整数'
+        return input > 0 || '请输入一个正整数'
+      },
     },
     {
       type: 'number',
@@ -52,15 +57,9 @@ export async function getSitemapInputs() {
       },
     },
     {
-      type: 'number',
+      type: 'input',
       name: 'proxyPort',
       message: '代理服务器端口（数值类型）:',
-      validate: (input) => {
-        if (typeof input !== 'number')
-          return '请输入一个正整数'
-        return input > 0 || '请输入一个正整数'
-      },
-      default: 8800,
     },
   ])
 
