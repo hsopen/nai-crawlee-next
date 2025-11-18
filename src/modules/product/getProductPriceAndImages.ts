@@ -13,6 +13,7 @@ export async function getProductPriceAndImages(
   baseUrl: string,
   imageParam: boolean,
   dpIsDot: boolean,
+  imageProperty: string,
 ) {
   let prices: string[] = []
   let images: string[] = []
@@ -24,7 +25,7 @@ export async function getProductPriceAndImages(
 
     if (att1Buttons.length === 1) {
       const price = await getFirstValue(page, priceSelectors, 'prices')
-      const imageSrcs = await getFirstValue(page, imageSelectors, 'images')
+      const imageSrcs = await getFirstValue(page, imageSelectors, 'images', imageProperty)
       prices.push(...price)
       images.push(...imageSrcs)
     }
@@ -41,7 +42,7 @@ export async function getProductPriceAndImages(
         }
         let imageSrcs: string[] = []
         try {
-          imageSrcs = await getFirstValue(page, imageSelectors, 'images')
+          imageSrcs = await getFirstValue(page, imageSelectors, 'images', imageProperty)
         }
         catch {
           imageSrcs = []
@@ -57,7 +58,7 @@ export async function getProductPriceAndImages(
   }
   else {
     prices = await getFirstValue(page, priceSelectors, 'prices')
-    images = await getFirstValue(page, imageSelectors, 'images')
+    images = await getFirstValue(page, imageSelectors, 'images', imageProperty)
   }
 
   images = [...new Set(images)]
@@ -161,12 +162,13 @@ export async function getProductPriceAndImages(
  * @param selectors 选择器数组
  * @returns 第一个获取到的内容数组，没有则返回空数组
  */
-export async function getFirstValue(page: Page, selectors: string[], type: 'prices' | 'images'): Promise<string[]> {
+export async function getFirstValue(page: Page, selectors: string[], type: 'prices' | 'images', imageProperty?: string): Promise<string[]> {
   for (const selector of selectors) {
     try {
       let values: string[] = []
       if (type === 'images') {
-        values = await page.$$eval(selector, els => els.map(el => (el as HTMLImageElement).getAttribute('src') || ''))
+        const property = imageProperty || 'src'
+        values = await page.$$eval(selector, els => els.map(el => el.getAttribute(property) || ''))
       }
       else {
         values = await page.$$eval(selector, els => els.map(el => el.textContent?.trim() || ''))

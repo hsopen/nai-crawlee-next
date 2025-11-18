@@ -13,16 +13,15 @@ export interface TaskConfig {
     base: {
       name: {
         preClick: string[]
-        selector: string
+        selectors: string[]
+        property: string
         extSelector: string
       }
       description: {
-        preClick: string[]
-        selector: string
+        selectors: string[]
       }
       categorys: {
-        preClick: string[]
-        selector: string
+        selectors: string[]
         slice: string
         replaces: string[]
       }
@@ -65,6 +64,7 @@ export interface TaskConfig {
       images: {
         preClick: string[]
         selectors: string[]
+        property: string
         param: boolean
         replaces: string[]
       }

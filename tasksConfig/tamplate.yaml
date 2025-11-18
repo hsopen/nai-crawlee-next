@@ -14,14 +14,17 @@ sitemap:
 css: # 选择器
   base: # 基础选择器
     name: # 产品名
-      selector: "" # 产品名选择器
+      selectors: # 产品名选择器（找到第一个有值的数组元素后停止寻找）
+        - ""
       replaces:
         - ""
       extSelector: "" # 产品名后缀拓展选择器
     description:
-      selector: "" # 产品描述选择器
+      selectors: # 产品描述选择器（找到第一个有值的数组元素后停止寻找）
+        - ""
     categorys:
-      selector: "" # 产品分类选择器
+      selectors: # 产品分类选择器（找到第一个有值的数组元素后停止寻找）
+        - ""
       slice: "" # 产品分类切片选择,如 '2<|>-1' 表示取第3个到倒数第2个
       replaces: # 产品分类替换规则
         - ""
@@ -57,6 +60,7 @@ css: # 选择器
     images:
       selectors:
         - "" # 图片选择器（找到第一个有值的数组元素后停止寻找）
+      property: "src" # 图片选择器属性,为空表示取src
       param: true # 保留图片链接参数
       replaces: # 图片链接替换规则
         - ""

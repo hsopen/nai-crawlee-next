@@ -17,11 +17,11 @@ export function preCheckTaskConfig(filePath: string): TaskConfig {
 
   // 检查最小选择器配置
   const cssBase = taskConfig.css.base
-  if (cssBase.name.selector.trim() === '') {
-    throw new Error('css.base.name.selector不能为空，请检查配置文件')
+  if (cssBase.name.selectors.length === 0 || cssBase.name.selectors.every(s => s.trim() === '')) {
+    throw new Error('css.base.name.selectors不能为空，请检查配置文件')
   }
-  else if (cssBase.categorys.selector.trim() === '') {
-    throw new Error('css.base.categorys.selector不能为空，请检查配置文件')
+  else if (cssBase.categorys.selectors.length === 0 || cssBase.categorys.selectors.every(s => s.trim() === '')) {
+    throw new Error('css.base.categorys.selectors不能为空，请检查配置文件')
   }
   else if (cssBase.prices.selectors.length === 0 || cssBase.prices.selectors.every(s => s.trim() === '')) {
     throw new Error('css.base.prices.selectors不能为空，请检查配置文件')

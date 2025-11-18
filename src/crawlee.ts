@@ -63,34 +63,53 @@ export async function createCrawlerInstance(configPath: string) {
     async requestHandler({ request, page, handleCloudflareChallenge }) {
       const baseUrl = new URL(request.url).origin
       const cssBase = taskConfig.css.base
-
       // 统一赋值所有选择器变量
       const waitingTime = taskConfig.css.ext.waitingTime * 1000 || 0
-      const nameSelector = cssBase.name.selector || ''
+      const nameSelectors = Array.isArray(cssBase.name.selectors) ? cssBase.name.selectors.filter(Boolean) : []
       const nameExtSelector = cssBase.name.extSelector || ''
-      const descSelector = cssBase.description.selector || ''
-      const categorySelector = cssBase.categorys.selector || ''
+      const descSelectors = Array.isArray(cssBase.description.selectors) ? cssBase.description.selectors.filter(Boolean) : []
+      const categorySelectors = Array.isArray(cssBase.categorys.selectors) ? cssBase.categorys.selectors.filter(Boolean) : []
       const att1ValuesSelector = cssBase.att1Values.selector || ''
       const att2ValuesSelector = cssBase.att2Values.selector || ''
       const att3ValuesSelector = cssBase.att3Values.selector || ''
       const colorButtonsSelector = cssBase.colorButtons.selector || ''
       const imagesSelectors = Array.isArray(cssBase.images.selectors) ? cssBase.images.selectors.filter(Boolean) : []
       const pricesSelectors = Array.isArray(cssBase.prices.selectors) ? cssBase.prices.selectors.filter(Boolean) : []
+      let lastHeight = await page.evaluate('document.body.scrollHeight')
+      for (let i = 0; i < 30; i++) {
+        // 下滑一段距离
+        await page.evaluate(() => {
+          window.scrollBy(0, 800)
+        })
+        // 等待页面加载
+        await page.waitForTimeout(800)
+        // 检查高度是否改变
+        const newHeight = await page.evaluate('document.body.scrollHeight')
+        // 没变就可以停止了
+        if (newHeight === lastHeight) {
+          break
+        }
+        lastHeight = newHeight
+      }
       await actionClick(page, taskConfig.css.ext.startClick || [])
       // 获取产品名称
       await page.waitForTimeout(waitingTime) // 等待，确保页面加载完成
       await handleCloudflareChallenge()
       try {
-        await page.waitForSelector(`${nameSelector}`, { timeout: 30000 })
-        await page.waitForSelector(`${categorySelector}`, { timeout: 30000 })
+        if (nameSelectors.length > 0) {
+          await page.waitForSelector(`${nameSelectors[0]}`, { timeout: 30000 })
+        }
+        if (categorySelectors.length > 0) {
+          await page.waitForSelector(`${categorySelectors[0]}`, { timeout: 30000 })
+        }
       }
       catch { log.error(`无法找到名称或分类选择器: ${request.url}`) }
       await handleCloudflareChallenge()
-      const productName = await getProductName(page, nameSelector, nameExtSelector)
+      const productName = await getProductName(page, nameSelectors, nameExtSelector, cssBase.name.property || 'textContent')
       // 获取简介
-      const productDesc = await getProductDesc(page, descSelector)
+      const productDesc = await getProductDesc(page, descSelectors)
       // 获取分类
-      const productCategory = await getProductCategory(page, categorySelector, cssBase.categorys.slice || '', cssBase.categorys.replaces || [])
+      const productCategory = await getProductCategory(page, categorySelectors, cssBase.categorys.slice || '', cssBase.categorys.replaces || [])
       // 获取属性一Name
       const productAtt1Name = cssBase.att1Name.text
       const productAtt2Name = cssBase.att2Name.text
@@ -111,6 +130,7 @@ export async function createCrawlerInstance(configPath: string) {
         baseUrl,
         cssBase.images.param,
         cssBase.prices.dpIsDot,
+        cssBase.images.property || 'src',
       )
       if (productName === '') {
         log.warning(`商品名称缺失，跳过此商品: ${request.url}`)
