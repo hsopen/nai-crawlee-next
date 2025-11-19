@@ -19,6 +19,7 @@ export async function getProductPriceAndImages(
   let images: string[] = []
   if (colorButtons) {
     const att1Buttons = await page.$$(colorButtons)
+
     // 如果有 att2Values/att3Values 参数可用，则如下：
     const att2Set = att2Values.length > 0 ? att2Values : ['']
     const att3Set = att3Values.length > 0 ? att3Values : ['']
@@ -30,9 +31,15 @@ export async function getProductPriceAndImages(
       images.push(...imageSrcs)
     }
     else {
-      for (const button of att1Buttons) {
+      for (let i = 0; i < att1Buttons.length; i++) {
+        const button = att1Buttons[i]
+        if (!button) {
+          continue
+        }
+
         await button.click()
         await page.waitForTimeout(1000)
+
         let price: string[] = []
         try {
           price = await getFirstValue(page, priceSelectors, 'prices')
@@ -40,6 +47,7 @@ export async function getProductPriceAndImages(
         catch {
           price = []
         }
+
         let imageSrcs: string[] = []
         try {
           imageSrcs = await getFirstValue(page, imageSelectors, 'images', imageProperty)
@@ -47,9 +55,12 @@ export async function getProductPriceAndImages(
         catch {
           imageSrcs = []
         }
+
         const uniqueImages = [...new Set(imageSrcs)]
         images.push(...uniqueImages)
+
         const comboCount = (att2Set.length > 0 ? att2Set.length : 1) * (att3Set.length > 0 ? att3Set.length : 1)
+
         for (let i = 0; i < comboCount; i++) {
           prices.push(...price)
         }
@@ -62,6 +73,7 @@ export async function getProductPriceAndImages(
   }
 
   images = [...new Set(images)]
+
   if ([...new Set(prices)].length === 1) {
     prices = [prices[0]!]
   }
@@ -163,20 +175,27 @@ export async function getProductPriceAndImages(
  * @returns 第一个获取到的内容数组，没有则返回空数组
  */
 export async function getFirstValue(page: Page, selectors: string[], type: 'prices' | 'images', imageProperty?: string): Promise<string[]> {
-  for (const selector of selectors) {
+  for (let i = 0; i < selectors.length; i++) {
+    const selector = selectors[i]
+    if (!selector) {
+      continue
+    }
+
     try {
       let values: string[] = []
       if (type === 'images') {
         const property = imageProperty || 'src'
-        values = await page.$$eval(selector, els => els.map(el => el.getAttribute(property) || ''))
+        values = await page.$$eval(selector, (els, prop) => els.map(el => el.getAttribute(prop) || ''), property)
       }
       else {
         values = await page.$$eval(selector, els => els.map(el => el.textContent?.trim() || ''))
         // 只保留数字、点号和逗号
         values = values.map(v => v.replace(/[^\d.,]/g, ''))
       }
+
       // 过滤掉undefined和空字符串
       values = values.filter(v => v !== undefined && v !== '')
+
       if (values.length > 0) {
         return values
       }
@@ -185,5 +204,6 @@ export async function getFirstValue(page: Page, selectors: string[], type: 'pric
       // 选择器未命中，继续下一个
     }
   }
+
   return []
 }
